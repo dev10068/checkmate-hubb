@@ -2,29 +2,45 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkmate-hubb</title>
-    <!-- Stable CDN for CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
     <style>
         body { background: #2c3e50; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         #myBoard { width: 90vw; max-width: 400px; }
+        h2 { color: white; margin-bottom: 10px; }
     </style>
 </head>
 <body>
+
+    <h2>Checkmate-hubb</h2>
     <div id="myBoard"></div>
 
-    <!-- Mandatory JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
 
     <script>
         var game = new Chess();
+        
+        function onDrop(source, target) {
+            // Move check karo
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q'
+            });
+
+            // Agar illegal move hai, toh wapas kar do
+            if (move === null) return 'snapback';
+        }
+
         var board = Chessboard('myBoard', {
             draggable: true,
             position: 'start',
-            // Yeh pieces wali image ka stable link hai
-            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+            // Yeh sabse stable image source hai
+            pieceTheme: 'https://raw.githubusercontent.com/oakmac/chessboardjs/master/website/img/chesspieces/wikipedia/{piece}.png',
+            onDrop: onDrop
         });
     </script>
 </body>
