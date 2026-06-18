@@ -6,31 +6,45 @@
   <title>Checkmate-hubb</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
   <style>
-    :root { --bg: #14141c; --surface: #1c1c28; --accent: #c9a227; --text: #ece7da; }
-    html, body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-    .page { width: 100%; max-width: 500px; padding: 20px; text-align: center; }
-    .board-wrap { position: relative; width: 100%; margin: 20px 0; }
+    :root { --bg: #14141c; --surface: #1c1c28; --surface-2: #242432; --border: #34344a; --text: #ece7da; --accent: #c9a227; }
+    body { background: radial-gradient(circle at 20% -10%, #1f1f30 0%, var(--bg) 55%); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
+    .page { max-width: 460px; margin: 0 auto; }
+    .board-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
     #board { width: 100%; }
-    #tap-overlay { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); z-index: 5; }
+    .tap-overlay { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); z-index: 5; }
     .tap-cell { cursor: pointer; }
-    .tap-cell.selected { background: rgba(201, 162, 39, 0.4); }
-    .controls { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
-    button { padding: 12px 15px; border-radius: 8px; border: 1px solid #34344a; background: #242432; color: white; cursor: pointer; font-weight: bold; }
-    button.active { border-color: var(--accent); background: var(--accent); color: black; }
+    .tap-cell.selected { background: rgba(201, 162, 39, 0.3); box-shadow: inset 0 0 0 3px var(--accent); }
+    .panel-block { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    button { border: 1px solid var(--border); background: var(--surface-2); color: var(--text); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    button.active { border-color: var(--accent); background: var(--accent); color: #14141c; }
+    h2 { font-size: 0.9rem; color: var(--text); margin-top: 0; }
   </style>
 </head>
 <body>
 
 <div class="page">
-  <h1 id="mode-text">PvP Mode</h1>
-  <div class="board-wrap">
-    <div id="board"></div>
-    <div id="tap-overlay"></div>
+  <h1 style="text-align:center">Checkmate-hubb</h1>
+  <div class="board-card">
+    <div id="board" style="position:relative;"></div>
+    <div id="tap-overlay" class="tap-overlay"></div>
   </div>
-  <div class="controls">
-    <button id="btn-pvp" class="active">PvP</button>
-    <button id="btn-pvc">Vs CPU</button>
-    <button id="btn-new">Reset</button>
+
+  <div class="panel-block">
+    <h2 id="mode-text" style="color:var(--accent)">Mode: PvP</h2>
+    <div class="controls">
+      <button id="btn-pvp" class="active">PvP</button>
+      <button id="btn-pvc">Vs Computer</button>
+    </div>
+  </div>
+
+  <div class="panel-block">
+    <h2 id="status-text">White to move</h2>
+    <div class="controls" style="grid-template-columns: 1fr 1fr 1fr;">
+      <button id="btn-new">Reset</button>
+      <button id="btn-undo">Undo</button>
+      <button id="btn-flip">Flip</button>
+    </div>
   </div>
 </div>
 
@@ -39,51 +53,57 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 
 <script>
-  var game = new Chess();
-  var board = Chessboard('board', { position: 'start', draggable: false });
-  var isPvC = false, selectedSquare = null;
+  (function () {
+    var game = new Chess();
+    var isPvC = false, selectedSquare = null;
 
-  function handleTap(sq) {
-    if (game.game_over()) return;
-    if (!selectedSquare) {
-      let piece = game.get(sq);
-      if (piece && piece.color === game.turn()) {
-        selectedSquare = sq;
-        $('.tap-cell').removeClass('selected');
-        $(`[data-sq="${sq}"]`).addClass('selected');
-      }
-    } else {
-      if (game.move({ from: selectedSquare, to: sq, promotion: 'q' })) {
-        board.position(game.fen());
-        selectedSquare = null;
-        $('.tap-cell').removeClass('selected');
-        if (isPvC && !game.game_over()) window.setTimeout(makeComputerMove, 500);
+    function pieceTheme(p) {
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="50" y="80" text-anchor="middle" font-size="82" font-family="Arial" fill="'+(p[0]=='w'?'#f4ecd8':'#2a2a38')+'" stroke="'+(p[0]=='w'?'#3a2e1a':'#f4ecd8')+'" stroke-width="2.5" paint-order="stroke">'+{'wP':'♙','wN':'♘','wB':'♗','wR':'♖','wQ':'♕','wK':'♔','bP':'♟','bN':'♞','bB':'♝','bR':'♜','bQ':'♛','bK':'♚'}[p]+'</text></svg>');
+    }
+
+    var board = Chessboard('board', { position: 'start', draggable: false, pieceTheme: pieceTheme });
+
+    function handleTap(sq) {
+      if (game.game_over()) return;
+      if (!selectedSquare) {
+        if (game.get(sq) && game.get(sq).color === game.turn()) {
+          selectedSquare = sq;
+          $('.tap-cell').removeClass('selected');
+          $(`[data-sq="${sq}"]`).addClass('selected');
+        }
       } else {
+        if (game.move({ from: selectedSquare, to: sq, promotion: 'q' })) {
+          board.position(game.fen());
+          if (isPvC && !game.game_over()) window.setTimeout(makeComputerMove, 500);
+        }
         selectedSquare = null;
         $('.tap-cell').removeClass('selected');
       }
+      $('#status-text').text(game.turn() === 'w' ? 'White to move' : 'Black to move');
     }
-  }
 
-  function makeComputerMove() {
-    let moves = game.moves();
-    if (moves.length === 0) return;
-    game.move(moves[Math.floor(Math.random() * moves.length)]);
-    board.position(game.fen());
-  }
-
-  /* Overlay Setup */
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      let sq = String.fromCharCode(97 + c) + (8 - r);
-      $('#tap-overlay').append(`<div class="tap-cell" data-sq="${sq}" onclick="handleTap('${sq}')"></div>`);
+    function makeComputerMove() {
+      var moves = game.moves();
+      if(moves.length > 0) {
+        game.move(moves[Math.floor(Math.random() * moves.length)]);
+        board.position(game.fen());
+        $('#status-text').text('White to move');
+      }
     }
-  }
 
-  /* Mode Switching */
-  $('#btn-pvp').click(function() { isPvC = false; $('#mode-text').text('PvP Mode'); $(this).addClass('active'); $('#btn-pvc').removeClass('active'); });
-  $('#btn-pvc').click(function() { isPvC = true; $('#mode-text').text('Vs CPU Mode'); $(this).addClass('active'); $('#btn-pvp').removeClass('active'); });
-  $('#btn-new').click(function() { game.reset(); board.start(); selectedSquare = null; });
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        let sq = String.fromCharCode(97 + c) + (8 - r);
+        $('#tap-overlay').append(`<div class="tap-cell" data-sq="${sq}" onclick="handleTap('${sq}')"></div>`);
+      }
+    }
+
+    $('#btn-pvp').click(function() { isPvC=false; $('#mode-text').text('Mode: PvP'); $(this).addClass('active'); $('#btn-pvc').removeClass('active'); });
+    $('#btn-pvc').click(function() { isPvC=true; $('#mode-text').text('Mode: Vs Computer'); $(this).addClass('active'); $('#btn-pvp').removeClass('active'); });
+    $('#btn-new').click(function() { game.reset(); board.start(); $('#status-text').text('White to move'); });
+    $('#btn-undo').click(function() { game.undo(); game.undo(); board.position(game.fen()); });
+    $('#btn-flip').click(function() { board.flip(); });
+  })();
 </script>
 </body>
 </html>
