@@ -17,14 +17,11 @@
       --accent-soft: rgba(201, 162, 39, 0.16);
       --board-light: #e9dcc0;
       --board-dark: #6b4a33;
-      --good: #5fae6b;
       --bad: #c1554a;
       --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
       --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
-
     * { box-sizing: border-box; }
-
     html, body {
       margin: 0; padding: 0;
       background: radial-gradient(circle at 20% -10%, #1f1f30 0%, var(--bg) 55%);
@@ -32,9 +29,7 @@
       font-family: var(--font-body);
       min-height: 100vh;
     }
-
     .page { max-width: 960px; margin: 0 auto; padding: 32px 20px 56px; }
-
     header.app-header { text-align: center; margin-bottom: 28px; }
     header.app-header h1 {
       font-family: var(--font-display);
@@ -56,50 +51,31 @@
       border-radius: 14px; padding: 18px;
       box-shadow: 0 18px 40px -20px rgba(0,0,0,0.6);
     }
-
     .board-wrap { position: relative; width: 100%; max-width: 460px; margin: 0 auto; }
     #board { width: 100%; }
 
     #tap-overlay {
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       grid-template-rows: repeat(8, 1fr);
       z-index: 5;
     }
-
-    .tap-cell {
-      position: relative;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .tap-cell.selected {
-      box-shadow: inset 0 0 0 4px var(--accent);
-      background: rgba(201, 162, 39, 0.18);
-    }
-
+    .tap-cell { position: relative; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .tap-cell.selected { box-shadow: inset 0 0 0 4px var(--accent); background: rgba(201,162,39,0.18); }
     .tap-cell.legal-target::after {
-      content: '';
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 30%; height: 30%;
-      background: rgba(201, 162, 39, 0.6);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
+      content: ''; position: absolute;
+      top: 50%; left: 50%; width: 30%; height: 30%;
+      background: rgba(201,162,39,0.6); border-radius: 50%;
+      transform: translate(-50%,-50%); pointer-events: none;
     }
-
     .tap-cell.legal-target.has-piece::after {
-      width: 92%; height: 92%;
-      background: transparent;
-      box-shadow: inset 0 0 0 4px rgba(201, 162, 39, 0.7);
-      border-radius: 6px;
+      width: 92%; height: 92%; background: transparent;
+      box-shadow: inset 0 0 0 4px rgba(201,162,39,0.7); border-radius: 6px;
     }
 
     .white-1e1d7 { background-color: var(--board-light) !important; color: #8a6a3c !important; }
-    .black-3c85d { background-color: var(--board-dark)  !important; color: var(--board-light) !important; }
+    .black-3c85d { background-color: var(--board-dark) !important; color: var(--board-light) !important; }
     .board-b72b1 { border: 6px solid #2c2c3a !important; border-radius: 4px; }
     .highlight1-32417, .highlight2-9c5d2 { box-shadow: inset 0 0 0 4px rgba(201,162,39,0.65) !important; }
 
@@ -107,52 +83,83 @@
     .panel-block { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
     .panel-block h2 { margin: 0 0 10px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); font-weight: 600; }
 
+    /* MODE BUTTONS */
+    .mode-buttons { display: flex; flex-direction: column; gap: 8px; }
+    .mode-btn {
+      appearance: none; border: 1px solid var(--border);
+      background: var(--surface-2); color: var(--text);
+      font-family: var(--font-body); font-size: 0.82rem; font-weight: 500;
+      padding: 10px 12px; border-radius: 8px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, transform 0.05s;
+      text-align: left; display: flex; align-items: center; gap: 10px;
+    }
+    .mode-btn:hover { border-color: var(--accent); background: #2a2a3a; }
+    .mode-btn:active { transform: translateY(1px); }
+    .mode-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .mode-btn .mode-icon { font-size: 1.2rem; width: 22px; text-align: center; }
+    .mode-btn .mode-label { font-weight: 600; }
+    .mode-btn .mode-desc { font-size: 0.75rem; color: var(--text-dim); display: block; margin-top: 1px; }
+    .mode-btn.active .mode-desc { color: var(--accent); opacity: 0.75; }
+
     .turn-row { display: flex; align-items: center; gap: 10px; }
     .turn-dot {
       width: 12px; height: 12px; border-radius: 50%;
       background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft);
-      transition: background 0.25s ease, box-shadow 0.25s ease;
+      transition: background 0.25s, box-shadow 0.25s;
     }
     .turn-dot.black-turn { background: #cfcad8; box-shadow: 0 0 0 4px rgba(207,202,216,0.16); }
     #status-text { font-size: 1rem; font-weight: 500; }
     #status-text.check { color: var(--bad); }
-    #status-text.over  { color: var(--accent); }
+    #status-text.over { color: var(--accent); }
 
     .captured-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: var(--text-dim); padding: 6px 0; }
     .captured-row + .captured-row { border-top: 1px solid var(--border); }
     .captured-pieces { font-size: 1.25rem; letter-spacing: 1px; color: var(--text); min-height: 1.4em; }
 
-    #move-list { max-height: 220px; overflow-y: auto; font-size: 0.88rem; line-height: 1.7; color: var(--text); padding-right: 4px; }
+    #move-list { max-height: 180px; overflow-y: auto; font-size: 0.88rem; line-height: 1.7; color: var(--text); padding-right: 4px; }
     #move-list::-webkit-scrollbar { width: 6px; }
     #move-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-    .move-row { display: grid; grid-template-columns: 2.2em 1fr 1fr; gap: 6px; }
-    .move-row .num { color: var(--text-dim); }
     .empty-hint { color: var(--text-dim); font-size: 0.85rem; }
 
     .controls { display: flex; gap: 10px; flex-wrap: wrap; }
-    button {
+    button.ctrl-btn {
       appearance: none; border: 1px solid var(--border);
       background: var(--surface-2); color: var(--text);
       font-family: var(--font-body); font-size: 0.85rem; font-weight: 500;
       padding: 9px 14px; border-radius: 8px; cursor: pointer;
       transition: border-color 0.15s, background 0.15s, transform 0.05s;
     }
-    button:hover  { border-color: var(--accent); background: #2a2a3a; }
-    button:active { transform: translateY(1px); }
-    button.primary { border-color: var(--accent); color: #14141c; background: var(--accent); }
-    button.primary:hover { background: #d9b13d; }
-    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    button.ctrl-btn:hover { border-color: var(--accent); background: #2a2a3a; }
+    button.ctrl-btn:active { transform: translateY(1px); }
+    button.ctrl-btn.primary { border-color: var(--accent); color: #14141c; background: var(--accent); }
+    button.ctrl-btn.primary:hover { background: #d9b13d; }
 
-    footer { text-align: center; margin-top: 36px; color: var(--text-dim); font-size: 0.78rem; }
+    /* Thinking indicator */
+    #thinking-bar {
+      display: none; align-items: center; gap: 8px;
+      font-size: 0.8rem; color: var(--text-dim); margin-top: 8px;
+    }
+    #thinking-bar.show { display: flex; }
+    .dot-pulse { display: flex; gap: 4px; }
+    .dot-pulse span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); animation: pulse 1.2s infinite;
+    }
+    .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+    .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
   </style>
 </head>
 <body>
-
 <div class="page">
   <header class="app-header">
     <h1>Chess</h1>
     <div class="rule"></div>
-    <p>Piece tap karein, phir square tap karein</p>
+    <p id="header-sub">Player vs Player</p>
   </header>
 
   <div class="layout">
@@ -161,8 +168,43 @@
         <div id="board"></div>
         <div id="tap-overlay"></div>
       </div>
+      <div id="thinking-bar">
+        <div class="dot-pulse"><span></span><span></span><span></span></div>
+        <span id="thinking-text">Computer is thinking…</span>
+      </div>
     </div>
+
     <div class="side-panel">
+
+      <!-- MODE SELECTOR -->
+      <div class="panel-block">
+        <h2>Game Mode</h2>
+        <div class="mode-buttons">
+          <button class="mode-btn active" id="mode-pvp">
+            <span class="mode-icon">👥</span>
+            <span>
+              <span class="mode-label">Player vs Player</span>
+              <span class="mode-desc">Two humans, one board</span>
+            </span>
+          </button>
+          <button class="mode-btn" id="mode-pvc">
+            <span class="mode-icon">🤖</span>
+            <span>
+              <span class="mode-label">Player vs Computer</span>
+              <span class="mode-desc">You play White, AI plays Black</span>
+            </span>
+          </button>
+          <button class="mode-btn" id="mode-cvc">
+            <span class="mode-icon">⚙️</span>
+            <span>
+              <span class="mode-label">Computer vs Computer</span>
+              <span class="mode-desc">Watch the AI play itself</span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- STATUS -->
       <div class="panel-block">
         <h2>Status</h2>
         <div class="turn-row">
@@ -170,23 +212,30 @@
           <span id="status-text">White to move</span>
         </div>
       </div>
+
+      <!-- CAPTURED -->
       <div class="panel-block">
         <h2>Captured</h2>
-        <div class="captured-row"><span>White ne liye</span><span class="captured-pieces" id="captured-by-white">&mdash;</span></div>
-        <div class="captured-row"><span>Black ne liye</span><span class="captured-pieces" id="captured-by-black">&mdash;</span></div>
+        <div class="captured-row"><span>By White</span><span class="captured-pieces" id="captured-by-white">—</span></div>
+        <div class="captured-row"><span>By Black</span><span class="captured-pieces" id="captured-by-black">—</span></div>
       </div>
+
+      <!-- MOVES -->
       <div class="panel-block">
         <h2>Moves</h2>
-        <div id="move-list"><span class="empty-hint">Abhi koi move nahi</span></div>
+        <div id="move-list"><span class="empty-hint">No moves yet</span></div>
       </div>
+
+      <!-- CONTROLS -->
       <div class="panel-block">
         <h2>Controls</h2>
         <div class="controls">
-          <button class="primary" id="btn-new">New Game</button>
-          <button id="btn-undo">Undo</button>
-          <button id="btn-flip">Flip Board</button>
+          <button class="ctrl-btn primary" id="btn-new">New Game</button>
+          <button class="ctrl-btn" id="btn-undo">Undo</button>
+          <button class="ctrl-btn" id="btn-flip">Flip Board</button>
         </div>
       </div>
+
     </div>
   </div>
 </div>
@@ -198,13 +247,25 @@
 <script>
 (function () {
   'use strict';
+
+  // ── State ──────────────────────────────────────────────────────────────────
   var game = new Chess();
   var board = null;
+  // modes: 'pvp' | 'pvc' | 'cvc'
+  var mode = 'pvp';
+  var aiTimer = null;
+  var capturedByWhite = [];
+  var capturedByBlack = [];
+
+  // ── Piece theme ────────────────────────────────────────────────────────────
   var unicodePieces = {
     wP:'♙', wN:'♘', wB:'♗', wR:'♖', wQ:'♕', wK:'♔',
     bP:'♟', bN:'♞', bB:'♝', bR:'♜', bQ:'♛', bK:'♚'
   };
-
+  var pieceSymbols = {
+    p:'♟', n:'♞', b:'♝', r:'♜', q:'♛', k:'♚',
+    P:'♙', N:'♘', B:'♗', R:'♖', Q:'♕', K:'♔'
+  };
   var pieceCache = {};
   function pieceTheme(piece) {
     if (pieceCache[piece]) return pieceCache[piece];
@@ -213,23 +274,83 @@
     var stroke = isWhite ? '#3a2e1a' : '#f4ecd8';
     var glyph = unicodePieces[piece];
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
-      '<text x="50" y="80" text-anchor="middle" font-size="82" ' +
-      'font-family="Arial" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2.5" paint-order="stroke">' +
+      '<text x="50" y="80" text-anchor="middle" font-size="82" font-family="Arial" ' +
+      'fill="' + fill + '" stroke="' + stroke + '" stroke-width="2.5" paint-order="stroke">' +
       glyph + '</text></svg>';
-    var url = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
-    pieceCache[piece] = url;
-    return url;
+    pieceCache[piece] = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    return pieceCache[piece];
   }
 
-  var selectedSquare = null;
+  // ── Board init ─────────────────────────────────────────────────────────────
+  board = Chessboard('board', { position: 'start', draggable: false, pieceTheme: pieceTheme });
+
+  // Build tap overlay
+  var overlay = document.getElementById('tap-overlay');
+  for (var r = 0; r < 8; r++) {
+    for (var c = 0; c < 8; c++) {
+      var cell = document.createElement('div');
+      cell.className = 'tap-cell';
+      cell.setAttribute('data-row', r);
+      cell.setAttribute('data-col', c);
+      cell.addEventListener('click', (function(row, col) {
+        return function() { handleTap(squareForCell(row, col)); };
+      })(r, c));
+      overlay.appendChild(cell);
+    }
+  }
+
+  // ── Square helpers ─────────────────────────────────────────────────────────
   function squareForCell(row, col) {
     var files = ['a','b','c','d','e','f','g','h'];
-    return board.orientation() === 'white' ? files[col] + (8 - row) : files[7 - col] + (row + 1);
+    return board.orientation() === 'white'
+      ? files[col] + (8 - row)
+      : files[7 - col] + (row + 1);
   }
 
+  function cellForSquare(sq) {
+    var col = sq.charCodeAt(0) - 97;
+    var rank = parseInt(sq[1]);
+    var row, c;
+    if (board.orientation() === 'white') {
+      row = 8 - rank; c = col;
+    } else {
+      row = rank - 1; c = 7 - col;
+    }
+    return document.querySelector('[data-row="' + row + '"][data-col="' + c + '"]');
+  }
+
+  // ── Highlights ─────────────────────────────────────────────────────────────
+  var selectedSquare = null;
+
+  function clearHighlights() {
+    document.querySelectorAll('.tap-cell').forEach(function(c) {
+      c.classList.remove('selected', 'legal-target', 'has-piece');
+    });
+  }
+
+  function showHighlights(square) {
+    clearHighlights();
+    var legalMoves = game.moves({ square: square, verbose: true });
+    legalMoves.forEach(function(m) {
+      var cell = cellForSquare(m.to);
+      if (cell) {
+        cell.classList.add('legal-target');
+        if (game.get(m.to)) cell.classList.add('has-piece');
+      }
+    });
+    var selCell = cellForSquare(square);
+    if (selCell) selCell.classList.add('selected');
+  }
+
+  // ── Human tap handler ──────────────────────────────────────────────────────
   function handleTap(square) {
+    // Ignore taps when it's the computer's turn
+    if (mode === 'cvc') return;
+    if (mode === 'pvc' && game.turn() === 'b') return;
     if (game.game_over()) return;
+
     var piece = game.get(square);
+
     if (selectedSquare === null) {
       if (piece && piece.color === game.turn()) {
         selectedSquare = square;
@@ -237,54 +358,237 @@
       }
       return;
     }
+
     if (square === selectedSquare) {
       clearHighlights();
       selectedSquare = null;
       return;
     }
-    if (game.move({ from: selectedSquare, to: square, promotion: 'q' })) {
+
+    // Try to move
+    var moved = game.move({ from: selectedSquare, to: square, promotion: 'q' });
+    clearHighlights();
+    selectedSquare = null;
+
+    if (moved) {
+      trackCapture(moved);
+      board.position(game.fen());
+      updateGameUI();
+      // Schedule AI reply if needed
+      if (!game.game_over() && mode === 'pvc') {
+        scheduleAI(400);
+      }
+    } else {
+      // Clicked a different own piece — re-select it
+      if (piece && piece.color === game.turn()) {
+        selectedSquare = square;
+        showHighlights(square);
+      }
+    }
+  }
+
+  // ── AI ─────────────────────────────────────────────────────────────────────
+  function scheduleAI(delay) {
+    if (aiTimer) clearTimeout(aiTimer);
+    setThinking(true);
+    aiTimer = setTimeout(function() {
+      makeAIMove();
+    }, delay);
+  }
+
+  function makeAIMove() {
+    if (game.game_over()) { setThinking(false); return; }
+    var move = pickMove();
+    if (move) {
+      var result = game.move(move);
+      if (result) trackCapture(result);
       board.position(game.fen());
       updateGameUI();
     }
-    clearHighlights();
-    selectedSquare = null;
-  }
+    setThinking(false);
 
-  function clearHighlights() {
-    document.querySelectorAll('.tap-cell').forEach(function(c){ c.classList.remove('selected','legal-target','has-piece'); });
-  }
-
-  function showHighlights(square) {
-    clearHighlights();
-    var legalMoves = game.moves({ square: square, verbose: true });
-    legalMoves.forEach(function(m){
-      var cell = document.querySelector('[data-row="'+ (board.orientation()==='white' ? 8-m.to[1] : m.to[1]-1) +'"][data-col="'+ (board.orientation()==='white' ? m.to.charCodeAt(0)-97 : 104-m.to.charCodeAt(0)) +'"]');
-      if(cell) { cell.classList.add('legal-target'); if(game.get(m.to)) cell.classList.add('has-piece'); }
-    });
-    document.querySelector('[data-row="'+ (board.orientation()==='white' ? 8-square[1] : square[1]-1) +'"][data-col="'+ (board.orientation()==='white' ? square.charCodeAt(0)-97 : 104-square.charCodeAt(0)) +'"]').classList.add('selected');
-  }
-
-  function updateGameUI() {
-    var whiteTurn = game.turn() === 'w';
-    document.getElementById('turn-dot').classList.toggle('black-turn', !whiteTurn);
-    document.getElementById('status-text').textContent = (game.in_checkmate() ? 'Checkmate!' : (game.in_check() ? 'Check!' : (whiteTurn ? 'White' : 'Black') + ' to move'));
-    var hist = game.history();
-    document.getElementById('move-list').innerHTML = hist.map(function(m, i){ return i%2===0 ? '<div>'+(i/2+1)+'. '+m : m+'</div>'; }).join('');
-  }
-
-  board = Chessboard('board', { position: 'start', draggable: false, pieceTheme: pieceTheme });
-  var overlay = document.getElementById('tap-overlay');
-  for (var r = 0; r < 8; r++) {
-    for (var c = 0; c < 8; c++) {
-      var cell = document.createElement('div');
-      cell.className = 'tap-cell'; cell.setAttribute('data-row', r); cell.setAttribute('data-col', c);
-      cell.addEventListener('click', function() { handleTap(squareForCell(this.dataset.row, this.dataset.col)); });
-      overlay.appendChild(cell);
+    // In CvC, keep going
+    if (mode === 'cvc' && !game.game_over()) {
+      scheduleAI(600);
     }
   }
-  document.getElementById('btn-new').onclick = function(){ game.reset(); board.start(); updateGameUI(); };
-  document.getElementById('btn-undo').onclick = function(){ game.undo(); board.position(game.fen()); updateGameUI(); };
-  document.getElementById('btn-flip').onclick = function(){ board.flip(); };
+
+  // Simple minimax-lite: evaluate all moves, pick best by material + randomness
+  function pickMove() {
+    var moves = game.moves({ verbose: true });
+    if (moves.length === 0) return null;
+
+    var pieceValues = { p:1, n:3, b:3, r:5, q:9, k:0 };
+    var scored = moves.map(function(m) {
+      var score = 0;
+      // Capture bonus
+      if (m.captured) score += pieceValues[m.captured] * 10;
+      // Promotion bonus
+      if (m.promotion) score += 80;
+      // Check bonus
+      game.move(m);
+      if (game.in_check()) score += 5;
+      if (game.in_checkmate()) score += 1000;
+      game.undo();
+      // Small random noise so it doesn't always pick same move
+      score += Math.random() * 2;
+      return { move: m, score: score };
+    });
+
+    scored.sort(function(a, b) { return b.score - a.score; });
+    // Pick from top 3 moves with some variety
+    var topN = Math.min(3, scored.length);
+    return scored[Math.floor(Math.random() * topN)].move;
+  }
+
+  function setThinking(on) {
+    var bar = document.getElementById('thinking-bar');
+    var txt = document.getElementById('thinking-text');
+    if (on) {
+      var who = (game.turn() === 'w') ? 'White' : 'Black';
+      txt.textContent = (mode === 'cvc') ? who + ' is thinking…' : 'Computer is thinking…';
+      bar.classList.add('show');
+    } else {
+      bar.classList.remove('show');
+    }
+  }
+
+  // ── Capture tracking ───────────────────────────────────────────────────────
+  function trackCapture(moveResult) {
+    if (!moveResult.captured) return;
+    var sym = pieceSymbols[moveResult.color === 'w'
+      ? moveResult.captured.toUpperCase()
+      : moveResult.captured.toLowerCase()];
+    if (sym) {
+      if (moveResult.color === 'w') capturedByWhite.push(sym);
+      else capturedByBlack.push(sym);
+    }
+  }
+
+  function updateCaptured() {
+    var cw = document.getElementById('captured-by-white');
+    var cb = document.getElementById('captured-by-black');
+    cw.textContent = capturedByWhite.length ? capturedByWhite.join('') : '—';
+    cb.textContent = capturedByBlack.length ? capturedByBlack.join('') : '—';
+  }
+
+  // ── UI update ──────────────────────────────────────────────────────────────
+  function updateGameUI() {
+    var whiteTurn = game.turn() === 'w';
+    var dot = document.getElementById('turn-dot');
+    var st = document.getElementById('status-text');
+
+    dot.classList.toggle('black-turn', !whiteTurn);
+
+    if (game.in_checkmate()) {
+      st.textContent = (whiteTurn ? 'Black' : 'White') + ' wins! Checkmate!';
+      st.className = 'over';
+    } else if (game.in_draw()) {
+      st.textContent = 'Draw!';
+      st.className = 'over';
+    } else if (game.in_check()) {
+      st.textContent = (whiteTurn ? 'White' : 'Black') + ' is in Check!';
+      st.className = 'check';
+    } else {
+      st.textContent = (whiteTurn ? 'White' : 'Black') + ' to move';
+      st.className = '';
+    }
+
+    // Move list (paired)
+    var hist = game.history();
+    if (hist.length === 0) {
+      document.getElementById('move-list').innerHTML = '<span class="empty-hint">No moves yet</span>';
+    } else {
+      var rows = '';
+      for (var i = 0; i < hist.length; i += 2) {
+        rows += '<div style="display:grid;grid-template-columns:2em 1fr 1fr;gap:6px">' +
+          '<span style="color:var(--text-dim)">' + (i/2+1) + '.</span>' +
+          '<span>' + hist[i] + '</span>' +
+          '<span>' + (hist[i+1] || '') + '</span>' +
+          '</div>';
+      }
+      var ml = document.getElementById('move-list');
+      ml.innerHTML = rows;
+      ml.scrollTop = ml.scrollHeight;
+    }
+
+    updateCaptured();
+  }
+
+  // ── Mode switching ─────────────────────────────────────────────────────────
+  function setMode(m) {
+    mode = m;
+    if (aiTimer) clearTimeout(aiTimer);
+    setThinking(false);
+
+    // Update button active state
+    ['pvp','pvc','cvc'].forEach(function(id) {
+      document.getElementById('mode-' + id).classList.toggle('active', id === m);
+    });
+
+    // Update subtitle
+    var labels = { pvp: 'Player vs Player', pvc: 'Player vs Computer', cvc: 'Computer vs Computer' };
+    document.getElementById('header-sub').textContent = labels[m];
+
+    // Show/hide tap overlay
+    overlay.style.pointerEvents = (m === 'cvc') ? 'none' : 'auto';
+
+    // Start fresh
+    startNewGame();
+  }
+
+  function startNewGame() {
+    if (aiTimer) clearTimeout(aiTimer);
+    setThinking(false);
+    game.reset();
+    board.position('start');
+    capturedByWhite = [];
+    capturedByBlack = [];
+    selectedSquare = null;
+    clearHighlights();
+    updateGameUI();
+
+    // CvC starts immediately
+    if (mode === 'cvc') {
+      scheduleAI(800);
+    }
+  }
+
+  // ── Button wiring ──────────────────────────────────────────────────────────
+  document.getElementById('mode-pvp').addEventListener('click', function() { setMode('pvp'); });
+  document.getElementById('mode-pvc').addEventListener('click', function() { setMode('pvc'); });
+  document.getElementById('mode-cvc').addEventListener('click', function() { setMode('cvc'); });
+
+  document.getElementById('btn-new').addEventListener('click', function() { startNewGame(); });
+
+  document.getElementById('btn-undo').addEventListener('click', function() {
+    if (aiTimer) clearTimeout(aiTimer);
+    setThinking(false);
+    // In PvC undo both moves so human stays as white
+    if (mode === 'pvc') { game.undo(); game.undo(); }
+    else game.undo();
+    board.position(game.fen());
+    // Recompute captured from history
+    rebuildCaptured();
+    updateGameUI();
+  });
+
+  document.getElementById('btn-flip').addEventListener('click', function() {
+    board.flip();
+    clearHighlights();
+    selectedSquare = null;
+  });
+
+  function rebuildCaptured() {
+    capturedByWhite = [];
+    capturedByBlack = [];
+    var hist = game.history({ verbose: true });
+    hist.forEach(function(m) { trackCapture(m); });
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  updateGameUI();
+
 })();
 </script>
 </body>
