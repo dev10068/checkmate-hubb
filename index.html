@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chess</title>
+
+  <!-- ✅ PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#14141c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Chess">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
   <style>
     :root{
@@ -83,7 +93,6 @@
     .panel-block { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
     .panel-block h2 { margin: 0 0 10px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); font-weight: 600; }
 
-    /* MODE BUTTONS */
     .mode-buttons { display: flex; flex-direction: column; gap: 8px; }
     .mode-btn {
       appearance: none; border: 1px solid var(--border);
@@ -138,7 +147,6 @@
     button.ctrl-btn.primary { border-color: var(--accent); color: #14141c; background: var(--accent); }
     button.ctrl-btn.primary:hover { background: #d9b13d; }
 
-    /* Thinking indicator */
     #thinking-bar {
       display: none; align-items: center; gap: 8px;
       font-size: 0.8rem; color: var(--text-dim); margin-top: 8px;
@@ -176,7 +184,6 @@
 
     <div class="side-panel">
 
-      <!-- MODE SELECTOR -->
       <div class="panel-block">
         <h2>Game Mode</h2>
         <div class="mode-buttons">
@@ -204,7 +211,6 @@
         </div>
       </div>
 
-      <!-- STATUS -->
       <div class="panel-block">
         <h2>Status</h2>
         <div class="turn-row">
@@ -213,20 +219,17 @@
         </div>
       </div>
 
-      <!-- CAPTURED -->
       <div class="panel-block">
         <h2>Captured</h2>
         <div class="captured-row"><span>By White</span><span class="captured-pieces" id="captured-by-white">—</span></div>
         <div class="captured-row"><span>By Black</span><span class="captured-pieces" id="captured-by-black">—</span></div>
       </div>
 
-      <!-- MOVES -->
       <div class="panel-block">
         <h2>Moves</h2>
         <div id="move-list"><span class="empty-hint">No moves yet</span></div>
       </div>
 
-      <!-- CONTROLS -->
       <div class="panel-block">
         <h2>Controls</h2>
         <div class="controls">
@@ -248,16 +251,13 @@
 (function () {
   'use strict';
 
-  // ── State ──────────────────────────────────────────────────────────────────
   var game = new Chess();
   var board = null;
-  // modes: 'pvp' | 'pvc' | 'cvc'
   var mode = 'pvp';
   var aiTimer = null;
   var capturedByWhite = [];
   var capturedByBlack = [];
 
-  // ── Piece theme ────────────────────────────────────────────────────────────
   var unicodePieces = {
     wP:'♙', wN:'♘', wB:'♗', wR:'♖', wQ:'♕', wK:'♔',
     bP:'♟', bN:'♞', bB:'♝', bR:'♜', bQ:'♛', bK:'♚'
@@ -281,10 +281,8 @@
     return pieceCache[piece];
   }
 
-  // ── Board init ─────────────────────────────────────────────────────────────
   board = Chessboard('board', { position: 'start', draggable: false, pieceTheme: pieceTheme });
 
-  // Build tap overlay
   var overlay = document.getElementById('tap-overlay');
   for (var r = 0; r < 8; r++) {
     for (var c = 0; c < 8; c++) {
@@ -299,7 +297,6 @@
     }
   }
 
-  // ── Square helpers ─────────────────────────────────────────────────────────
   function squareForCell(row, col) {
     var files = ['a','b','c','d','e','f','g','h'];
     return board.orientation() === 'white'
@@ -319,7 +316,6 @@
     return document.querySelector('[data-row="' + row + '"][data-col="' + c + '"]');
   }
 
-  // ── Highlights ─────────────────────────────────────────────────────────────
   var selectedSquare = null;
 
   function clearHighlights() {
@@ -342,9 +338,7 @@
     if (selCell) selCell.classList.add('selected');
   }
 
-  // ── Human tap handler ──────────────────────────────────────────────────────
   function handleTap(square) {
-    // Ignore taps when it's the computer's turn
     if (mode === 'cvc') return;
     if (mode === 'pvc' && game.turn() === 'b') return;
     if (game.game_over()) return;
@@ -365,7 +359,6 @@
       return;
     }
 
-    // Try to move
     var moved = game.move({ from: selectedSquare, to: square, promotion: 'q' });
     clearHighlights();
     selectedSquare = null;
@@ -374,12 +367,10 @@
       trackCapture(moved);
       board.position(game.fen());
       updateGameUI();
-      // Schedule AI reply if needed
       if (!game.game_over() && mode === 'pvc') {
         scheduleAI(400);
       }
     } else {
-      // Clicked a different own piece — re-select it
       if (piece && piece.color === game.turn()) {
         selectedSquare = square;
         showHighlights(square);
@@ -387,7 +378,6 @@
     }
   }
 
-  // ── AI ─────────────────────────────────────────────────────────────────────
   function scheduleAI(delay) {
     if (aiTimer) clearTimeout(aiTimer);
     setThinking(true);
@@ -407,13 +397,11 @@
     }
     setThinking(false);
 
-    // In CvC, keep going
     if (mode === 'cvc' && !game.game_over()) {
       scheduleAI(600);
     }
   }
 
-  // Simple minimax-lite: evaluate all moves, pick best by material + randomness
   function pickMove() {
     var moves = game.moves({ verbose: true });
     if (moves.length === 0) return null;
@@ -421,22 +409,17 @@
     var pieceValues = { p:1, n:3, b:3, r:5, q:9, k:0 };
     var scored = moves.map(function(m) {
       var score = 0;
-      // Capture bonus
       if (m.captured) score += pieceValues[m.captured] * 10;
-      // Promotion bonus
       if (m.promotion) score += 80;
-      // Check bonus
       game.move(m);
       if (game.in_check()) score += 5;
       if (game.in_checkmate()) score += 1000;
       game.undo();
-      // Small random noise so it doesn't always pick same move
       score += Math.random() * 2;
       return { move: m, score: score };
     });
 
     scored.sort(function(a, b) { return b.score - a.score; });
-    // Pick from top 3 moves with some variety
     var topN = Math.min(3, scored.length);
     return scored[Math.floor(Math.random() * topN)].move;
   }
@@ -453,7 +436,6 @@
     }
   }
 
-  // ── Capture tracking ───────────────────────────────────────────────────────
   function trackCapture(moveResult) {
     if (!moveResult.captured) return;
     var sym = pieceSymbols[moveResult.color === 'w'
@@ -472,7 +454,6 @@
     cb.textContent = capturedByBlack.length ? capturedByBlack.join('') : '—';
   }
 
-  // ── UI update ──────────────────────────────────────────────────────────────
   function updateGameUI() {
     var whiteTurn = game.turn() === 'w';
     var dot = document.getElementById('turn-dot');
@@ -494,7 +475,6 @@
       st.className = '';
     }
 
-    // Move list (paired)
     var hist = game.history();
     if (hist.length === 0) {
       document.getElementById('move-list').innerHTML = '<span class="empty-hint">No moves yet</span>';
@@ -515,25 +495,19 @@
     updateCaptured();
   }
 
-  // ── Mode switching ─────────────────────────────────────────────────────────
   function setMode(m) {
     mode = m;
     if (aiTimer) clearTimeout(aiTimer);
     setThinking(false);
 
-    // Update button active state
     ['pvp','pvc','cvc'].forEach(function(id) {
       document.getElementById('mode-' + id).classList.toggle('active', id === m);
     });
 
-    // Update subtitle
     var labels = { pvp: 'Player vs Player', pvc: 'Player vs Computer', cvc: 'Computer vs Computer' };
     document.getElementById('header-sub').textContent = labels[m];
 
-    // Show/hide tap overlay
     overlay.style.pointerEvents = (m === 'cvc') ? 'none' : 'auto';
-
-    // Start fresh
     startNewGame();
   }
 
@@ -548,13 +522,11 @@
     clearHighlights();
     updateGameUI();
 
-    // CvC starts immediately
     if (mode === 'cvc') {
       scheduleAI(800);
     }
   }
 
-  // ── Button wiring ──────────────────────────────────────────────────────────
   document.getElementById('mode-pvp').addEventListener('click', function() { setMode('pvp'); });
   document.getElementById('mode-pvc').addEventListener('click', function() { setMode('pvc'); });
   document.getElementById('mode-cvc').addEventListener('click', function() { setMode('cvc'); });
@@ -564,11 +536,9 @@
   document.getElementById('btn-undo').addEventListener('click', function() {
     if (aiTimer) clearTimeout(aiTimer);
     setThinking(false);
-    // In PvC undo both moves so human stays as white
     if (mode === 'pvc') { game.undo(); game.undo(); }
     else game.undo();
     board.position(game.fen());
-    // Recompute captured from history
     rebuildCaptured();
     updateGameUI();
   });
@@ -586,8 +556,16 @@
     hist.forEach(function(m) { trackCapture(m); });
   }
 
-  // ── Init ───────────────────────────────────────────────────────────────────
   updateGameUI();
+
+  // ✅ Register Service Worker for offline support
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js')
+        .then(function(reg) { console.log('SW registered:', reg.scope); })
+        .catch(function(err) { console.log('SW error:', err); });
+    });
+  }
 
 })();
 </script>
