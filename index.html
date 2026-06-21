@@ -11,8 +11,16 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Chess">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32"  href="icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16"  href="icons/favicon-16x16.png">
+  <!-- iOS Splash Screens -->
+  <link rel="apple-touch-startup-image" href="icons/splash-iphone-14-pro.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="icons/splash-iphone-8.png"      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="icons/splash-iphone-se.png"     media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="icons/splash-ipad.png"          media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
   <style>
@@ -147,6 +155,23 @@
     button.ctrl-btn.primary { border-color: var(--accent); color: #14141c; background: var(--accent); }
     button.ctrl-btn.primary:hover { background: #d9b13d; }
 
+    /* Difficulty selector */
+    #difficulty-block { display: none; }
+    #difficulty-block.show { display: block; }
+    .diff-buttons { display: flex; gap: 8px; }
+    .diff-btn {
+      flex: 1; appearance: none; border: 1px solid var(--border);
+      background: var(--surface-2); color: var(--text);
+      font-family: var(--font-body); font-size: 0.8rem; font-weight: 600;
+      padding: 9px 6px; border-radius: 8px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, transform 0.05s;
+      text-align: center;
+    }
+    .diff-btn:hover { border-color: var(--accent); background: #2a2a3a; }
+    .diff-btn:active { transform: translateY(1px); }
+    .diff-btn.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+    .diff-btn .diff-icon { display: block; font-size: 1.1rem; margin-bottom: 3px; }
+
     #thinking-bar {
       display: none; align-items: center; gap: 8px;
       font-size: 0.8rem; color: var(--text-dim); margin-top: 8px;
@@ -160,9 +185,126 @@
     .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
     .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes pulse { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+    /* Rules Button */
+    #rules-btn {
+      position: fixed; top: 18px; right: 18px; z-index: 100;
+      appearance: none; border: 1px solid var(--accent);
+      background: var(--surface); color: var(--accent);
+      font-family: var(--font-body); font-size: 0.82rem; font-weight: 600;
+      padding: 8px 14px; border-radius: 20px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      transition: background 0.15s, transform 0.1s;
+    }
+    #rules-btn:hover { background: var(--accent-soft); transform: translateY(-1px); }
+    #rules-btn:active { transform: translateY(0); }
+
+    /* Modal Overlay */
+    #rules-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+      animation: fadeIn 0.2s ease;
+    }
+    #rules-overlay.open { display: flex; align-items: flex-end; justify-content: center; }
+    @media (min-width: 600px) { #rules-overlay.open { align-items: center; } }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    /* Rules Drawer */
+    #rules-drawer {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px 20px 0 0; width: 100%; max-width: 620px;
+      max-height: 88vh; display: flex; flex-direction: column;
+      animation: slideUp 0.25s ease;
+    }
+    @media (min-width: 600px) {
+      #rules-drawer { border-radius: 16px; max-height: 82vh; }
+    }
+    @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .rules-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .rules-header h2 {
+      margin: 0; font-family: var(--font-display); font-size: 1.3rem;
+      font-weight: 600; color: var(--text);
+    }
+    #rules-close {
+      appearance: none; border: 1px solid var(--border); background: var(--surface-2);
+      color: var(--text-dim); font-size: 1.1rem; width: 32px; height: 32px;
+      border-radius: 50%; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: border-color 0.15s, color 0.15s;
+    }
+    #rules-close:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Lang Toggle */
+    .lang-toggle {
+      display: flex; gap: 0; padding: 14px 20px 10px; flex-shrink: 0;
+    }
+    .lang-btn {
+      flex: 1; appearance: none; border: 1px solid var(--border);
+      background: var(--surface-2); color: var(--text-dim);
+      font-family: var(--font-body); font-size: 0.82rem; font-weight: 600;
+      padding: 8px; cursor: pointer; transition: all 0.15s;
+    }
+    .lang-btn:first-child { border-radius: 8px 0 0 8px; }
+    .lang-btn:last-child  { border-radius: 0 8px 8px 0; border-left: none; }
+    .lang-btn.active { background: var(--accent); color: #14141c; border-color: var(--accent); }
+
+    /* Rules Content */
+    #rules-content {
+      overflow-y: auto; padding: 10px 20px 28px; flex: 1;
+    }
+    #rules-content::-webkit-scrollbar { width: 6px; }
+    #rules-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .rules-section {
+      margin-bottom: 18px; border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .rules-section-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; background: var(--surface-2);
+      font-weight: 700; font-size: 0.92rem; color: var(--accent);
+    }
+    .rules-section-header .piece-icon { font-size: 1.3rem; }
+    .rules-section ul {
+      margin: 0; padding: 10px 14px 12px 32px;
+      list-style: disc; color: var(--text); font-size: 0.88rem; line-height: 1.75;
+    }
+    .rules-section ul li { margin-bottom: 2px; }
+    .rules-tag {
+      display: inline-block; font-size: 0.7rem; font-weight: 700;
+      padding: 1px 6px; border-radius: 4px; margin-left: 4px;
+      background: var(--accent-soft); color: var(--accent); vertical-align: middle;
+    }
+    .rules-tag.red { background: rgba(193,85,74,0.18); color: var(--bad); }
+  
   </style>
 </head>
 <body>
+<!-- Rules Button -->
+<button id="rules-btn">📖 Rules</button>
+
+<!-- Rules Modal -->
+<div id="rules-overlay">
+  <div id="rules-drawer">
+    <div class="rules-header">
+      <h2>♟ Chess Rules</h2>
+      <button id="rules-close">✕</button>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="lang-en">🇬🇧 English</button>
+      <button class="lang-btn" id="lang-hi">🇮🇳 Hinglish</button>
+    </div>
+    <div id="rules-content">
+      <!-- injected by JS -->
+    </div>
+  </div>
+</div>
+
 <div class="page">
   <header class="app-header">
     <h1>Chess</h1>
@@ -211,6 +353,22 @@
         </div>
       </div>
 
+      <!-- DIFFICULTY (only shown in PvC mode) -->
+      <div class="panel-block" id="difficulty-block">
+        <h2>Difficulty</h2>
+        <div class="diff-buttons">
+          <button class="diff-btn active" id="diff-easy">
+            <span class="diff-icon">🟢</span>Easy
+          </button>
+          <button class="diff-btn" id="diff-moderate">
+            <span class="diff-icon">🟡</span>Moderate
+          </button>
+          <button class="diff-btn" id="diff-hard">
+            <span class="diff-icon">🔴</span>Hard
+          </button>
+        </div>
+      </div>
+
       <div class="panel-block">
         <h2>Status</h2>
         <div class="turn-row">
@@ -254,6 +412,7 @@
   var game = new Chess();
   var board = null;
   var mode = 'pvp';
+  var difficulty = 'easy'; // 'easy' | 'moderate' | 'hard'
   var aiTimer = null;
   var capturedByWhite = [];
   var capturedByBlack = [];
@@ -378,6 +537,41 @@
     }
   }
 
+  // ── Stockfish Engine (Hard mode) ───────────────────────────────────────────
+  var stockfish = null;
+  var stockfishReady = false;
+  var stockfishCallback = null;
+
+  function initStockfish() {
+    if (stockfish) return;
+    try {
+      stockfish = new Worker('https://cdn.jsdelivr.net/npm/stockfish@16.0.0/src/stockfish.js');
+      stockfish.onmessage = function(e) {
+        var line = e.data;
+        if (line === 'uciok') { stockfish.postMessage('isready'); }
+        if (line === 'readyok') { stockfishReady = true; }
+        // Parse bestmove
+        if (line.startsWith('bestmove') && stockfishCallback) {
+          var parts = line.split(' ');
+          var uciMove = parts[1];
+          if (uciMove && uciMove !== '(none)' && stockfishCallback) {
+            stockfishCallback(uciMove);
+            stockfishCallback = null;
+          }
+        }
+      };
+      stockfish.onerror = function() { stockfish = null; stockfishReady = false; };
+      stockfish.postMessage('uci');
+    } catch(e) { stockfish = null; }
+  }
+
+  function askStockfish(fen, depth, callback) {
+    if (!stockfish || !stockfishReady) { callback(null); return; }
+    stockfishCallback = callback;
+    stockfish.postMessage('position fen ' + fen);
+    stockfish.postMessage('go depth ' + depth);
+  }
+
   function scheduleAI(delay) {
     if (aiTimer) clearTimeout(aiTimer);
     setThinking(true);
@@ -388,6 +582,30 @@
 
   function makeAIMove() {
     if (game.game_over()) { setThinking(false); return; }
+
+    // Hard mode — use Stockfish
+    if (difficulty === 'hard' && mode !== 'cvc' && stockfish && stockfishReady) {
+      askStockfish(game.fen(), 18, function(uciMove) {
+        if (uciMove) {
+          var from = uciMove.slice(0, 2);
+          var to   = uciMove.slice(2, 4);
+          var promo = uciMove[4] || 'q';
+          var result = game.move({ from: from, to: to, promotion: promo });
+          if (result) trackCapture(result);
+        } else {
+          // Fallback to minimax if Stockfish fails
+          var move = pickMoveMinimax();
+          if (move) { var r = game.move(move); if (r) trackCapture(r); }
+        }
+        board.position(game.fen());
+        updateGameUI();
+        setThinking(false);
+        if (mode === 'cvc' && !game.game_over()) scheduleAI(600);
+      });
+      return;
+    }
+
+    // Easy / Moderate (or CvC)
     var move = pickMove();
     if (move) {
       var result = game.move(move);
@@ -402,26 +620,99 @@
     }
   }
 
+  var pieceValues = { p:1, n:3, b:3, r:5, q:9, k:0 };
+
+  function evaluateBoard() {
+    var score = 0;
+    var board_state = game.board();
+    board_state.forEach(function(row) {
+      row.forEach(function(piece) {
+        if (!piece) return;
+        var val = pieceValues[piece.type] || 0;
+        score += piece.color === game.turn() ? val : -val;
+      });
+    });
+    return score;
+  }
+
+  function minimax(depth, alpha, beta, maximizing) {
+    if (depth === 0 || game.game_over()) return evaluateBoard();
+    var moves = game.moves({ verbose: true });
+    if (maximizing) {
+      var best = -Infinity;
+      for (var i = 0; i < moves.length; i++) {
+        game.move(moves[i]);
+        var val = minimax(depth - 1, alpha, beta, false);
+        game.undo();
+        best = Math.max(best, val);
+        alpha = Math.max(alpha, best);
+        if (beta <= alpha) break;
+      }
+      return best;
+    } else {
+      var best = Infinity;
+      for (var i = 0; i < moves.length; i++) {
+        game.move(moves[i]);
+        var val = minimax(depth - 1, alpha, beta, true);
+        game.undo();
+        best = Math.min(best, val);
+        beta = Math.min(beta, best);
+        if (beta <= alpha) break;
+      }
+      return best;
+    }
+  }
+
+  function pickMoveMinimax() {
+    var moves = game.moves({ verbose: true });
+    if (!moves.length) return null;
+    var bestMove = null, bestScore = -Infinity;
+    moves.forEach(function(m) {
+      game.move(m);
+      var score = minimax(2, -Infinity, Infinity, false);
+      game.undo();
+      if (score > bestScore) { bestScore = score; bestMove = m; }
+    });
+    return bestMove;
+  }
+
   function pickMove() {
     var moves = game.moves({ verbose: true });
     if (moves.length === 0) return null;
 
-    var pieceValues = { p:1, n:3, b:3, r:5, q:9, k:0 };
-    var scored = moves.map(function(m) {
-      var score = 0;
-      if (m.captured) score += pieceValues[m.captured] * 10;
-      if (m.promotion) score += 80;
-      game.move(m);
-      if (game.in_check()) score += 5;
-      if (game.in_checkmate()) score += 1000;
-      game.undo();
-      score += Math.random() * 2;
-      return { move: m, score: score };
-    });
+    // EASY
+    if (difficulty === 'easy') {
+      var scored = moves.map(function(m) {
+        var score = 0;
+        if (m.captured) score += pieceValues[m.captured] * 10;
+        if (m.promotion) score += 80;
+        game.move(m);
+        if (game.in_checkmate()) score += 1000;
+        game.undo();
+        score += Math.random() * 20;
+        return { move: m, score: score };
+      });
+      scored.sort(function(a, b) { return b.score - a.score; });
+      var topN = Math.max(1, Math.floor(moves.length * 0.6));
+      return scored[Math.floor(Math.random() * topN)].move;
+    }
 
-    scored.sort(function(a, b) { return b.score - a.score; });
-    var topN = Math.min(3, scored.length);
-    return scored[Math.floor(Math.random() * topN)].move;
+    // MODERATE
+    if (difficulty === 'moderate') {
+      var scored = moves.map(function(m) {
+        game.move(m);
+        var score = minimax(1, -Infinity, Infinity, false);
+        game.undo();
+        score += Math.random() * 1.5;
+        return { move: m, score: score };
+      });
+      scored.sort(function(a, b) { return b.score - a.score; });
+      var topN = Math.min(3, scored.length);
+      return scored[Math.floor(Math.random() * topN)].move;
+    }
+
+    // HARD fallback (if Stockfish not ready yet)
+    return pickMoveMinimax();
   }
 
   function setThinking(on) {
@@ -508,6 +799,21 @@
     document.getElementById('header-sub').textContent = labels[m];
 
     overlay.style.pointerEvents = (m === 'cvc') ? 'none' : 'auto';
+
+    // Show difficulty only in PvC mode
+    document.getElementById('difficulty-block').classList.toggle('show', m === 'pvc');
+
+    // Load Stockfish when PvC selected
+    if (m === 'pvc') initStockfish();
+
+    startNewGame();
+  }
+
+  function setDifficulty(d) {
+    difficulty = d;
+    ['easy','moderate','hard'].forEach(function(id) {
+      document.getElementById('diff-' + id).classList.toggle('active', id === d);
+    });
     startNewGame();
   }
 
@@ -530,6 +836,10 @@
   document.getElementById('mode-pvp').addEventListener('click', function() { setMode('pvp'); });
   document.getElementById('mode-pvc').addEventListener('click', function() { setMode('pvc'); });
   document.getElementById('mode-cvc').addEventListener('click', function() { setMode('cvc'); });
+
+  document.getElementById('diff-easy').addEventListener('click', function() { setDifficulty('easy'); });
+  document.getElementById('diff-moderate').addEventListener('click', function() { setDifficulty('moderate'); });
+  document.getElementById('diff-hard').addEventListener('click', function() { setDifficulty('hard'); });
 
   document.getElementById('btn-new').addEventListener('click', function() { startNewGame(); });
 
@@ -557,6 +867,219 @@
   }
 
   updateGameUI();
+
+  // ── RULES MODAL ────────────────────────────────────────────────────────────
+  var rulesLang = 'en';
+
+  var rulesData = {
+    en: [
+      {
+        icon: '♙', title: 'Pawn',
+        items: [
+          'Moves forward 1 square. On its very first move, it can move 2 squares forward.',
+          'Captures diagonally — 1 square forward-left or forward-right.',
+          '<b>En Passant</b> <span class="rules-tag">Special</span> — If an opponent\'s pawn moves 2 squares and lands beside your pawn, you can capture it as if it moved only 1 square. Must be done immediately on the next move.',
+          '<b>Promotion</b> <span class="rules-tag">Special</span> — When a pawn reaches the last rank (row 8 for White, row 1 for Black), it must be promoted to Queen, Rook, Bishop, or Knight.'
+        ]
+      },
+      {
+        icon: '♘', title: 'Knight',
+        items: [
+          'Moves in an "L" shape — 2 squares in one direction, then 1 square perpendicular (or vice versa).',
+          'The only piece that can <b>jump over</b> other pieces.',
+          'Always lands on a square of the opposite color from where it started.'
+        ]
+      },
+      {
+        icon: '♗', title: 'Bishop',
+        items: [
+          'Moves diagonally any number of squares.',
+          'Always stays on the same color square.',
+          'Each player starts with one light-squared and one dark-squared Bishop.'
+        ]
+      },
+      {
+        icon: '♖', title: 'Rook',
+        items: [
+          'Moves any number of squares horizontally or vertically.',
+          'Cannot jump over pieces.',
+          '<b>Castling</b> <span class="rules-tag">Special</span> — See Castling section below.'
+        ]
+      },
+      {
+        icon: '♛', title: 'Queen',
+        items: [
+          'The most powerful piece — moves any number of squares in any direction (horizontal, vertical, or diagonal).',
+          'Cannot jump over pieces.',
+          'Combines the power of Rook + Bishop.'
+        ]
+      },
+      {
+        icon: '♔', title: 'King',
+        items: [
+          'Moves exactly 1 square in any direction.',
+          'Cannot move to a square that is attacked by an opponent\'s piece.',
+          '<b>Castling</b> <span class="rules-tag">Special</span> — King moves 2 squares toward a Rook, and that Rook jumps to the other side of the King. Conditions: neither piece has moved before, no pieces between them, King is not in check, and King does not pass through or land on an attacked square.'
+        ]
+      },
+      {
+        icon: '⚔️', title: 'Check, Checkmate & Stalemate',
+        items: [
+          '<b>Check</b> — Your King is under attack. You MUST get out of check immediately.',
+          '<b>Checkmate</b> — Your King is in check and there is no legal move to escape. The player in checkmate loses the game.',
+          '<b>Stalemate</b> <span class="rules-tag">Draw</span> — It is your turn but you have no legal moves and your King is NOT in check. The game is a draw.',
+          'Three ways to escape check: move the King, block the attack with another piece, or capture the attacking piece.'
+        ]
+      },
+      {
+        icon: '🤝', title: 'Draw Conditions',
+        items: [
+          '<b>Stalemate</b> — No legal moves, King not in check.',
+          '<b>Insufficient Material</b> — Neither side has enough pieces to checkmate (e.g., King vs King).',
+          '<b>50-Move Rule</b> — 50 moves by each player with no pawn move and no capture.',
+          '<b>Threefold Repetition</b> — The same position occurs 3 times.',
+          '<b>Agreement</b> — Both players agree to a draw.'
+        ]
+      },
+      {
+        icon: '❌', title: 'Invalid Moves (Not Allowed)',
+        items: [
+          'Moving a piece to a square occupied by your own piece.',
+          'Making a move that leaves your own King in check.',
+          'Moving through pieces (except the Knight).',
+          'Castling when the King is in check, has already moved, or passes through an attacked square.',
+          'Capturing your own piece.',
+          'Moving a piece in a way it is not allowed to move (e.g., Bishop moving straight).'
+        ]
+      }
+    ],
+    hi: [
+      {
+        icon: '♙', title: 'Pawn (Pyada)',
+        items: [
+          'Seedha aage 1 ghar move karta hai. Pehli baar 2 ghar bhi ja sakta hai.',
+          'Capture karta hai tirchhay (diagonal) — aage-left ya aage-right.',
+          '<b>En Passant</b> <span class="rules-tag">Special</span> — Agar dushman ka pawn 2 ghar jump karke tumhare pawn ke saath aake khada ho jaye, toh tum usse pakad sakte ho jaisa ki wo 1 ghar aaya ho. Yeh next move pe hi karna hoga.',
+          '<b>Promotion</b> <span class="rules-tag">Special</span> — Jab pawn dusre side ki last line pe pahunch jaye, toh usse Queen, Rook, Bishop ya Knight mein badalna padta hai.'
+        ]
+      },
+      {
+        icon: '♘', title: 'Knight (Ghoda)',
+        items: [
+          '"L" shape mein move karta hai — 2 ghar ek taraf, phir 1 ghar sideway.',
+          'Ek akaila piece jo doosre pieces ke upar se jump kar sakta hai.',
+          'Hamesha opposite color ke ghar pe land karta hai.'
+        ]
+      },
+      {
+        icon: '♗', title: 'Bishop (Oont / Fil)',
+        items: [
+          'Sirf diagonal direction mein kitne bhi ghar move kar sakta hai.',
+          'Hamesha usi color ke ghar pe rehta hai jahan se shuru kiya.',
+          'Har player ke paas ek light-color aur ek dark-color Bishop hota hai.'
+        ]
+      },
+      {
+        icon: '♖', title: 'Rook (Haathi)',
+        items: [
+          'Seedha — aage-peeche ya left-right — kitne bhi ghar ja sakta hai.',
+          'Beech mein koi piece ho toh jump nahi kar sakta.',
+          '<b>Castling</b> <span class="rules-tag">Special</span> — Neeche dekho.'
+        ]
+      },
+      {
+        icon: '♛', title: 'Queen (Wazir)',
+        items: [
+          'Sabse powerful piece — kisi bhi direction mein kitne bhi ghar ja sakti hai.',
+          'Beech mein koi piece ho toh ruk jaati hai, jump nahi kar sakti.',
+          'Rook + Bishop dono ki taakat ek saath.'
+        ]
+      },
+      {
+        icon: '♔', title: 'King (Badshah)',
+        items: [
+          'Sirf 1 ghar kisi bhi direction mein move kar sakta hai.',
+          'Jis ghar pe dushman ka attack ho wahan nahi ja sakta.',
+          '<b>Castling</b> <span class="rules-tag">Special</span> — King 2 ghar Rook ki taraf jaata hai aur Rook King ke doosri taraf aa jaata hai. Conditions: dono ne pehle kabhi move nahi kiya ho, beech mein koi piece na ho, King check mein na ho, aur jis raste se guzre woh bhi safe ho.'
+        ]
+      },
+      {
+        icon: '⚔️', title: 'Check, Checkmate aur Stalemate',
+        items: [
+          '<b>Check</b> — Tumhara King attack mein hai. Turant bachao — koi aur move nahi kar sakte.',
+          '<b>Checkmate</b> — King check mein hai aur bachne ka koi tarika nahi. Game khatam, tum haare.',
+          '<b>Stalemate</b> <span class="rules-tag">Draw</span> — Tumhari baari hai, koi legal move nahi hai, lekin King check mein bhi nahi hai. Game draw ho jaata hai.',
+          'Check se bachne ke 3 tarike: King ko hatao, attack ko kisi piece se block karo, ya attack karne wale piece ko pakad lo.'
+        ]
+      },
+      {
+        icon: '🤝', title: 'Draw kab hota hai',
+        items: [
+          '<b>Stalemate</b> — Koi legal move nahi, King check mein nahi.',
+          '<b>Insufficient Material</b> — Dono ke paas itne pieces nahi ki checkmate kar sakein (jaise King vs King).',
+          '<b>50-Move Rule</b> — 50 moves mein koi pawn move nahi aur koi capture nahi.',
+          '<b>Threefold Repetition</b> — Same position 3 baar aaye.',
+          '<b>Agreement</b> — Dono players draw maan lein.'
+        ]
+      },
+      {
+        icon: '❌', title: 'Invalid Moves (Jo allowed nahi hain)',
+        items: [
+          'Apne hi piece wale ghar pe move karna.',
+          'Aisa move karna jisse tumhara apna King check mein aa jaye.',
+          'Kisi piece ke upar se guzarna (sirf Knight jump kar sakta hai).',
+          'Castling tab jab King check mein ho, pehle move kar chuka ho, ya raste mein attack ho.',
+          'Apna piece khana (capture karna).',
+          'Piece ko galat tarike se move karna (jaise Bishop ko seedha chalana).'
+        ]
+      }
+    ]
+  };
+
+  function renderRules() {
+    var data = rulesData[rulesLang];
+    var html = '';
+    data.forEach(function(section) {
+      html += '<div class="rules-section">';
+      html += '<div class="rules-section-header"><span class="piece-icon">' + section.icon + '</span>' + section.title + '</div>';
+      html += '<ul>';
+      section.items.forEach(function(item) {
+        html += '<li>' + item + '</li>';
+      });
+      html += '</ul></div>';
+    });
+    document.getElementById('rules-content').innerHTML = html;
+  }
+
+  function openRules() {
+    renderRules();
+    document.getElementById('rules-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeRules() {
+    document.getElementById('rules-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('rules-btn').addEventListener('click', openRules);
+  document.getElementById('rules-close').addEventListener('click', closeRules);
+  document.getElementById('rules-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeRules();
+  });
+
+  document.getElementById('lang-en').addEventListener('click', function() {
+    rulesLang = 'en';
+    this.classList.add('active');
+    document.getElementById('lang-hi').classList.remove('active');
+    renderRules();
+  });
+  document.getElementById('lang-hi').addEventListener('click', function() {
+    rulesLang = 'hi';
+    this.classList.add('active');
+    document.getElementById('lang-en').classList.remove('active');
+    renderRules();
+  });
 
   // ✅ Register Service Worker for offline support
   if ('serviceWorker' in navigator) {
